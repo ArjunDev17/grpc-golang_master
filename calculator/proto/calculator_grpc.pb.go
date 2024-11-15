@@ -19,7 +19,8 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	SumServices_Sum_FullMethodName = "/calculator.SumServices/Sum"
+	SumServices_Sum_FullMethodName    = "/calculator.SumServices/Sum"
+	SumServices_Primes_FullMethodName = "/calculator.SumServices/Primes"
 )
 
 // SumServicesClient is the client API for SumServices service.
@@ -28,6 +29,7 @@ const (
 type SumServicesClient interface {
 	// rpc MethodName (Request) returns (Response);
 	Sum(ctx context.Context, in *SumRequest, opts ...grpc.CallOption) (*SumResponse, error)
+	Primes(ctx context.Context, in *PrimeRequest, opts ...grpc.CallOption) (grpc.ServerStreamingClient[PrimeResponse], error)
 }
 
 type sumServicesClient struct {
@@ -48,12 +50,32 @@ func (c *sumServicesClient) Sum(ctx context.Context, in *SumRequest, opts ...grp
 	return out, nil
 }
 
+func (c *sumServicesClient) Primes(ctx context.Context, in *PrimeRequest, opts ...grpc.CallOption) (grpc.ServerStreamingClient[PrimeResponse], error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	stream, err := c.cc.NewStream(ctx, &SumServices_ServiceDesc.Streams[0], SumServices_Primes_FullMethodName, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	x := &grpc.GenericClientStream[PrimeRequest, PrimeResponse]{ClientStream: stream}
+	if err := x.ClientStream.SendMsg(in); err != nil {
+		return nil, err
+	}
+	if err := x.ClientStream.CloseSend(); err != nil {
+		return nil, err
+	}
+	return x, nil
+}
+
+// This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.
+type SumServices_PrimesClient = grpc.ServerStreamingClient[PrimeResponse]
+
 // SumServicesServer is the server API for SumServices service.
 // All implementations must embed UnimplementedSumServicesServer
 // for forward compatibility.
 type SumServicesServer interface {
 	// rpc MethodName (Request) returns (Response);
 	Sum(context.Context, *SumRequest) (*SumResponse, error)
+	Primes(*PrimeRequest, grpc.ServerStreamingServer[PrimeResponse]) error
 	mustEmbedUnimplementedSumServicesServer()
 }
 
@@ -66,6 +88,9 @@ type UnimplementedSumServicesServer struct{}
 
 func (UnimplementedSumServicesServer) Sum(context.Context, *SumRequest) (*SumResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Sum not implemented")
+}
+func (UnimplementedSumServicesServer) Primes(*PrimeRequest, grpc.ServerStreamingServer[PrimeResponse]) error {
+	return status.Errorf(codes.Unimplemented, "method Primes not implemented")
 }
 func (UnimplementedSumServicesServer) mustEmbedUnimplementedSumServicesServer() {}
 func (UnimplementedSumServicesServer) testEmbeddedByValue()                     {}
@@ -106,6 +131,17 @@ func _SumServices_Sum_Handler(srv interface{}, ctx context.Context, dec func(int
 	return interceptor(ctx, in, info, handler)
 }
 
+func _SumServices_Primes_Handler(srv interface{}, stream grpc.ServerStream) error {
+	m := new(PrimeRequest)
+	if err := stream.RecvMsg(m); err != nil {
+		return err
+	}
+	return srv.(SumServicesServer).Primes(m, &grpc.GenericServerStream[PrimeRequest, PrimeResponse]{ServerStream: stream})
+}
+
+// This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.
+type SumServices_PrimesServer = grpc.ServerStreamingServer[PrimeResponse]
+
 // SumServices_ServiceDesc is the grpc.ServiceDesc for SumServices service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -118,6 +154,12 @@ var SumServices_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _SumServices_Sum_Handler,
 		},
 	},
-	Streams:  []grpc.StreamDesc{},
+	Streams: []grpc.StreamDesc{
+		{
+			StreamName:    "Primes",
+			Handler:       _SumServices_Primes_Handler,
+			ServerStreams: true,
+		},
+	},
 	Metadata: "calculator.proto",
 }

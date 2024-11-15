@@ -11,7 +11,14 @@ message SumRequest{
 message SumResponse{
         int32 result=1;
 }
+message PrimeRequest{
+        int64 number=1;
+}
+message PrimeResponse{
+        int64 result=1;
+}
 service SumServices{
         // rpc MethodName (Request) returns (Response);
         rpc Sum(SumRequest)returns (SumResponse);
+        rpc Primes(PrimeRequest)returns(stream PrimeResponse);
 }

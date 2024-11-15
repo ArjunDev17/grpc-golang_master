@@ -8,7 +8,7 @@ import (
 	"google.golang.org/grpc/credentials/insecure"
 )
 
-var address string = "localhost:5059"
+var address string = "localhost:5050"
 
 func main() {
 	conn, err := grpc.Dial(address, grpc.WithTransportCredentials(insecure.NewCredentials()))
@@ -19,6 +19,9 @@ func main() {
 
 	c := pb.NewGreetServiceClient(conn)
 
-	doGreet(c)
+	// doGreet(c)
+
+	// doGreetManyTimes(c)
+	doLongGreet(c)
 
 }
