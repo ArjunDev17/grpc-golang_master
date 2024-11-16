@@ -21,6 +21,7 @@ const _ = grpc.SupportPackageIsVersion9
 const (
 	SumServices_Sum_FullMethodName    = "/calculator.SumServices/Sum"
 	SumServices_Primes_FullMethodName = "/calculator.SumServices/Primes"
+	SumServices_Avg_FullMethodName    = "/calculator.SumServices/Avg"
 )
 
 // SumServicesClient is the client API for SumServices service.
@@ -30,6 +31,7 @@ type SumServicesClient interface {
 	// rpc MethodName (Request) returns (Response);
 	Sum(ctx context.Context, in *SumRequest, opts ...grpc.CallOption) (*SumResponse, error)
 	Primes(ctx context.Context, in *PrimeRequest, opts ...grpc.CallOption) (grpc.ServerStreamingClient[PrimeResponse], error)
+	Avg(ctx context.Context, opts ...grpc.CallOption) (grpc.ClientStreamingClient[AvgRequest, AvgResponse], error)
 }
 
 type sumServicesClient struct {
@@ -69,6 +71,19 @@ func (c *sumServicesClient) Primes(ctx context.Context, in *PrimeRequest, opts .
 // This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.
 type SumServices_PrimesClient = grpc.ServerStreamingClient[PrimeResponse]
 
+func (c *sumServicesClient) Avg(ctx context.Context, opts ...grpc.CallOption) (grpc.ClientStreamingClient[AvgRequest, AvgResponse], error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	stream, err := c.cc.NewStream(ctx, &SumServices_ServiceDesc.Streams[1], SumServices_Avg_FullMethodName, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	x := &grpc.GenericClientStream[AvgRequest, AvgResponse]{ClientStream: stream}
+	return x, nil
+}
+
+// This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.
+type SumServices_AvgClient = grpc.ClientStreamingClient[AvgRequest, AvgResponse]
+
 // SumServicesServer is the server API for SumServices service.
 // All implementations must embed UnimplementedSumServicesServer
 // for forward compatibility.
@@ -76,6 +91,7 @@ type SumServicesServer interface {
 	// rpc MethodName (Request) returns (Response);
 	Sum(context.Context, *SumRequest) (*SumResponse, error)
 	Primes(*PrimeRequest, grpc.ServerStreamingServer[PrimeResponse]) error
+	Avg(grpc.ClientStreamingServer[AvgRequest, AvgResponse]) error
 	mustEmbedUnimplementedSumServicesServer()
 }
 
@@ -91,6 +107,9 @@ func (UnimplementedSumServicesServer) Sum(context.Context, *SumRequest) (*SumRes
 }
 func (UnimplementedSumServicesServer) Primes(*PrimeRequest, grpc.ServerStreamingServer[PrimeResponse]) error {
 	return status.Errorf(codes.Unimplemented, "method Primes not implemented")
+}
+func (UnimplementedSumServicesServer) Avg(grpc.ClientStreamingServer[AvgRequest, AvgResponse]) error {
+	return status.Errorf(codes.Unimplemented, "method Avg not implemented")
 }
 func (UnimplementedSumServicesServer) mustEmbedUnimplementedSumServicesServer() {}
 func (UnimplementedSumServicesServer) testEmbeddedByValue()                     {}
@@ -142,6 +161,13 @@ func _SumServices_Primes_Handler(srv interface{}, stream grpc.ServerStream) erro
 // This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.
 type SumServices_PrimesServer = grpc.ServerStreamingServer[PrimeResponse]
 
+func _SumServices_Avg_Handler(srv interface{}, stream grpc.ServerStream) error {
+	return srv.(SumServicesServer).Avg(&grpc.GenericServerStream[AvgRequest, AvgResponse]{ServerStream: stream})
+}
+
+// This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.
+type SumServices_AvgServer = grpc.ClientStreamingServer[AvgRequest, AvgResponse]
+
 // SumServices_ServiceDesc is the grpc.ServiceDesc for SumServices service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -159,6 +185,11 @@ var SumServices_ServiceDesc = grpc.ServiceDesc{
 			StreamName:    "Primes",
 			Handler:       _SumServices_Primes_Handler,
 			ServerStreams: true,
+		},
+		{
+			StreamName:    "Avg",
+			Handler:       _SumServices_Avg_Handler,
+			ClientStreams: true,
 		},
 	},
 	Metadata: "calculator.proto",
