@@ -27,9 +27,17 @@ message AvgResponse{
         double result=1;
 }
 
+message MaxRequest{
+        int32 number=1;
+}
+message MaxResponse{
+        int32 result=1;
+}
+
 service SumServices{
         // rpc MethodName (Request) returns (Response);
         rpc Sum(SumRequest)returns (SumResponse);
         rpc Primes(PrimeRequest)returns(stream PrimeResponse);
         rpc Avg (stream AvgRequest) returns (AvgResponse);
+        rpc Max (stream MaxRequest) returns (stream MaxResponse);
 }

@@ -8,7 +8,7 @@ import (
 	"google.golang.org/grpc/credentials/insecure"
 )
 
-var address string = "localhost:5059"
+var address string = "localhost:5050"
 
 func main() {
 	conn, err := grpc.Dial(address, grpc.WithTransportCredentials(insecure.NewCredentials()))
@@ -23,5 +23,6 @@ func main() {
 	// doSum(c)
 	// dOPrime(c)
 
-	doAvg(c)
+	// doAvg(c)
+	doMax(c)
 }
