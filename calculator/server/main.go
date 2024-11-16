@@ -12,7 +12,7 @@ type Server struct {
 	pb.UnimplementedSumServicesServer
 }
 
-var addres string = "localhost:5059"
+var addres string = "localhost:5050"
 
 func main() {
 	lis, err := net.Listen("tcp", addres)
