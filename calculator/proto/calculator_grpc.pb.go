@@ -23,6 +23,7 @@ const (
 	SumServices_Primes_FullMethodName = "/calculator.SumServices/Primes"
 	SumServices_Avg_FullMethodName    = "/calculator.SumServices/Avg"
 	SumServices_Max_FullMethodName    = "/calculator.SumServices/Max"
+	SumServices_Sqrt_FullMethodName   = "/calculator.SumServices/Sqrt"
 )
 
 // SumServicesClient is the client API for SumServices service.
@@ -34,6 +35,7 @@ type SumServicesClient interface {
 	Primes(ctx context.Context, in *PrimeRequest, opts ...grpc.CallOption) (grpc.ServerStreamingClient[PrimeResponse], error)
 	Avg(ctx context.Context, opts ...grpc.CallOption) (grpc.ClientStreamingClient[AvgRequest, AvgResponse], error)
 	Max(ctx context.Context, opts ...grpc.CallOption) (grpc.BidiStreamingClient[MaxRequest, MaxResponse], error)
+	Sqrt(ctx context.Context, in *SqrtRequest, opts ...grpc.CallOption) (*SqrtResponse, error)
 }
 
 type sumServicesClient struct {
@@ -99,6 +101,16 @@ func (c *sumServicesClient) Max(ctx context.Context, opts ...grpc.CallOption) (g
 // This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.
 type SumServices_MaxClient = grpc.BidiStreamingClient[MaxRequest, MaxResponse]
 
+func (c *sumServicesClient) Sqrt(ctx context.Context, in *SqrtRequest, opts ...grpc.CallOption) (*SqrtResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(SqrtResponse)
+	err := c.cc.Invoke(ctx, SumServices_Sqrt_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // SumServicesServer is the server API for SumServices service.
 // All implementations must embed UnimplementedSumServicesServer
 // for forward compatibility.
@@ -108,6 +120,7 @@ type SumServicesServer interface {
 	Primes(*PrimeRequest, grpc.ServerStreamingServer[PrimeResponse]) error
 	Avg(grpc.ClientStreamingServer[AvgRequest, AvgResponse]) error
 	Max(grpc.BidiStreamingServer[MaxRequest, MaxResponse]) error
+	Sqrt(context.Context, *SqrtRequest) (*SqrtResponse, error)
 	mustEmbedUnimplementedSumServicesServer()
 }
 
@@ -129,6 +142,9 @@ func (UnimplementedSumServicesServer) Avg(grpc.ClientStreamingServer[AvgRequest,
 }
 func (UnimplementedSumServicesServer) Max(grpc.BidiStreamingServer[MaxRequest, MaxResponse]) error {
 	return status.Errorf(codes.Unimplemented, "method Max not implemented")
+}
+func (UnimplementedSumServicesServer) Sqrt(context.Context, *SqrtRequest) (*SqrtResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Sqrt not implemented")
 }
 func (UnimplementedSumServicesServer) mustEmbedUnimplementedSumServicesServer() {}
 func (UnimplementedSumServicesServer) testEmbeddedByValue()                     {}
@@ -194,6 +210,24 @@ func _SumServices_Max_Handler(srv interface{}, stream grpc.ServerStream) error {
 // This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.
 type SumServices_MaxServer = grpc.BidiStreamingServer[MaxRequest, MaxResponse]
 
+func _SumServices_Sqrt_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(SqrtRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(SumServicesServer).Sqrt(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: SumServices_Sqrt_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(SumServicesServer).Sqrt(ctx, req.(*SqrtRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // SumServices_ServiceDesc is the grpc.ServiceDesc for SumServices service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -204,6 +238,10 @@ var SumServices_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "Sum",
 			Handler:    _SumServices_Sum_Handler,
+		},
+		{
+			MethodName: "Sqrt",
+			Handler:    _SumServices_Sqrt_Handler,
 		},
 	},
 	Streams: []grpc.StreamDesc{
