@@ -15,6 +15,7 @@ type Server struct {
 
 var addres string = "localhost:5050"
 
+// arjun.singh@Update grpc-golang_master % evans --host localhost --port 5050 --reflection repl
 func main() {
 	lis, err := net.Listen("tcp", addres)
 	if err != nil {
