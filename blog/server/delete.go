@@ -8,7 +8,6 @@ import (
 	pb "github.com/ArjunDev17/grpc-golang_master/blog/proto"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
-	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/emptypb"
@@ -38,4 +37,5 @@ func (s *Server) DeleteingBlog(ctx context.Context, in *pb.BlogId) (*emptypb.Emp
 			"Blog not found",
 		)
 	}
+	return &emptypb.Empty{}, nil
 }

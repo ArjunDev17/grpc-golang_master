@@ -23,4 +23,5 @@ func main() {
 	readBlog(c, id)
 	UpdateBlog(c, id)
 	listBlog(c)
+	deletBlog(c, id)
 }
