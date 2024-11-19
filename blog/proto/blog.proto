@@ -1,0 +1,26 @@
+syntax = "proto3";
+
+package blog;
+
+option go_package="github.com/ArjunDev17/grpc-golang_master/blog/proto";
+
+import "google/protobuf/empty.proto";
+
+message Blog {
+    string id = 1;
+    string author_id = 2;
+    string title = 3;
+    string content = 4;
+}
+
+message BlogId {
+    string id = 1;
+}
+
+service BlogService {
+    rpc CreateBlog (Blog) returns (BlogId);
+    rpc ReadBlog (BlogId) returns (Blog);
+    rpc UpdateBlog (Blog) returns (google.protobuf.Empty);
+    rpc DeleteingBlog (BlogId) returns (google.protobuf.Empty);
+    rpc ListBlogs (google.protobuf.Empty) returns (stream Blog);
+}

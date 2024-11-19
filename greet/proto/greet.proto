@@ -14,5 +14,9 @@ service GreetService{
         rpc Greet(GreetRequest)returns (GreetResponse);
         rpc GreetManyTimes (GreetRequest) returns (stream GreetResponse);
         rpc LongGreet(stream GreetRequest)returns (GreetResponse);
+<<<<<<< HEAD
         rpc GreetEveryone(stream GreetRequest)returns (stream GreetResponse);
+=======
+        rpc GreetWithDeadline (GreetRequest) returns (GreetResponse);
+>>>>>>> crud-api_mongodb
 }
