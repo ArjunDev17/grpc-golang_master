@@ -12,7 +12,7 @@ import (
 
 func doGreetEveryone(c pb.GreetServiceClient) {
 	log.Println("DoGreet everyone invoked")
-	stream, err := c.GreetEveryone(context.Background())
+	stream, err := c.GreetManyTimes(context.Background())
 
 	if err != nil {
 		log.Fatalf("Error while creating stream :%v\n", err)

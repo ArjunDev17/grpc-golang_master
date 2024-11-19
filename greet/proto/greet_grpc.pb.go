@@ -227,12 +227,6 @@ var GreetService_ServiceDesc = grpc.ServiceDesc{
 			Handler:       _GreetService_LongGreet_Handler,
 			ClientStreams: true,
 		},
-		{
-			StreamName:    "GreetEveryone",
-			Handler:       _GreetService_GreetEveryone_Handler,
-			ServerStreams: true,
-			ClientStreams: true,
-		},
 	},
 	Metadata: "greet.proto",
 }
